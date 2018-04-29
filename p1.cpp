@@ -49,12 +49,13 @@ void Read(std::vector<Token> &V, std::string s){
 }
 
 void Name(std::vector<Token> &V, std::stack<Node*> &S){
+    Read(V, "<identifier>");
 }
 
 void ConstValue(std::vector<Token> &V, std::stack<Node*> &S){
-    if(V.begin()->token == "integer"){
+    if(V.begin()->type == "integer"){
         Read(V, "integer");
-    } else if (V.begin()->token == "char") {
+    } else if (V.begin()->type == "char") {
         Read(V, "char");
     } else {
         Name(V, S);
@@ -100,14 +101,14 @@ void LitList(std::vector<Token> &V, std::stack<Node*> &S){
 
 void Type(std::vector<Token> &V, std::stack<Node*> &S){
     Name(V,S);
-    Read("=");
+    Read(V, "=");
     LitList(V,S);
-    Build_tree("type",3);
+    Build_tree("type",3, S);
 }
 
 void Types(std::vector<Token> &V, std::stack<Node*> &S){
     int x = 1;
-    if(V.begin->token == "type"){
+    if(V.begin()->token == "type"){
         Read(V, "type");
         Type(V, S);
         while(V.begin()->token == ";"){
@@ -115,9 +116,9 @@ void Types(std::vector<Token> &V, std::stack<Node*> &S){
             Read(V, ";");
             Type(V, S);
         }
-        Build_tree("types", x);
+        Build_tree("types", x, S);
     } else {
-        Build_tree("types", 0);
+        Build_tree("types", 0, S);
     }
 }
 
@@ -161,9 +162,189 @@ void Dclns(std::vector<Token> &V, std::stack<Node*> &S){
 
 }
 
-void OutExp(std::vector<Token> &V, std::stack<Node*> &S){
-
+void StringNode(std::vector<Token> &V, std::stack<Node*> &S){
+    Read(V, "<string>");
 }
+
+void Term(std::vector<Token> &V, std::stack<Node*> &S);
+
+void Expression(std::vector<Token> &V, std::stack<Node*> &S){
+    Term(V, S);
+    if(V.begin()->token == "<="){
+        Read(V, "<=");
+        Term(V, S);
+        Build_tree("<=", 2, S);
+    } else
+    if(V.begin()->token == "<"){
+        Read(V, "<");
+        Term(V, S);
+        Build_tree("<", 2, S);
+    } else
+    if(V.begin()->token == ">="){
+        Read(V, ">=");
+        Term(V, S);
+        Build_tree(">=", 2, S);
+    } else
+    if(V.begin()->token == ">"){
+        Read(V, ">");
+        Term(V, S);
+        Build_tree(">", 2, S);
+    } else
+    if(V.begin()->token == "="){
+        Read(V, "=");
+        Term(V, S);
+        Build_tree("=", 2, S);
+    } else
+    if(V.begin()->token == "<>"){
+        Read(V, "<>");
+        Term(V, S);
+        Build_tree("<>", 2, S);
+    }
+}
+
+
+
+void Primary(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()-> token == "-"){
+        Read(V, "-");
+        Primary(V, S);
+        Build_tree("-", 1, S);
+    } else
+    if(V.begin()-> token == "+"){
+        Read(V, "+");
+        Primary(V, S);
+        Build_tree("+", 1, S);
+    } else
+    if(V.begin()-> token == "not"){
+        Read(V, "-");
+        Primary(V, S);
+        Build_tree("-", 1, S);
+    } else
+    if(V.begin()-> token == "eof"){
+        Read(V, "eof");
+        Build_tree("eof", 0, S);
+    } else
+    if(V.begin()-> token == "("){
+        Read(V, "(");
+        Expression(V, S);
+        Read(V, ")");
+    } else
+    if(V.begin()-> token == "succ"){
+        Read(V, "succ");
+        Read(V, "(");
+        Expression(V, S);
+        Read(V, ")");
+        Build_tree("succ", 1, S);
+    } else
+    if(V.begin()-> token == "pred"){
+        Read(V, "pred");
+        Read(V, "(");
+        Expression(V, S);
+        Read(V, ")");
+        Build_tree("pred", 1, S);
+    } else
+    if(V.begin()-> token == "chr"){
+        Read(V, "chr");
+        Read(V, "(");
+        Expression(V, S);
+        Read(V, ")");
+        Build_tree("chr", 1, S);
+    } else
+    if(V.begin()-> token == "ord"){
+        Read(V, "ord");
+        Read(V, "(");
+        Expression(V, S);
+        Read(V, ")");
+        Build_tree("ord", 1, S);
+    } else
+    if(V.begin()-> type == "integer"){
+        Read(V, "<integer>");
+    } else
+    if(V.begin()-> type == "char"){
+        Read(V, "<char>");
+    } else {
+        Name(V, S);
+        if(V.begin()->token == "("){
+            int x = 1;
+            Read(V, "(");
+            Expression(V, S);
+            while(V.begin()->token == ","){
+                Read(V, ",");
+                Expression(V, S);
+                ++x;
+            }
+            Read(V, ")");
+            Build_tree("call", x, S);
+        }
+    }
+}
+
+void Factor(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()-> token == "*"){
+        Factor(V, S);
+        Read(V, "*");
+        Primary(V, S);
+        Build_tree("*", 2, S);
+    } else
+    if(V.begin()-> token == "/"){
+        Factor(V, S);
+        Read(V, "/");
+        Primary(V, S);
+        Build_tree("/", 2, S);
+    } else
+    if(V.begin()-> token == "and"){
+        Factor(V, S);
+        Read(V, "and");
+        Primary(V, S);
+        Build_tree("and", 2, S);
+    } else
+    if(V.begin()-> token == "mod"){
+        Factor(V, S);
+        Read(V, "mod");
+        Primary(V, S);
+        Build_tree("mod", 2, S);
+    } else {
+        Primary(V,S);
+    }
+}
+
+void Term(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()-> token == "+"){
+        Term(V, S);
+        Read(V, "+");
+        Factor(V, S);
+        Build_tree("+", 2, S);
+    } else
+    if(V.begin()-> token == "-"){
+        Term(V, S);
+        Read(V, "-");
+        Factor(V, S);
+        Build_tree("-", 2, S);
+    } else
+    if(V.begin()-> token == "or"){
+        Term(V, S);
+        Read(V, "or");
+        Factor(V, S);
+        Build_tree("or", 2, S);
+    } else {
+        Factor(V, S);
+    }
+}
+
+void OutExp(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()->type == "str"){
+        StringNode(V, S);
+        Build_tree("string", 1, S);
+    } else {
+        Expression(V, S);
+        Build_tree("integer", 1, S);
+    }
+}
+
+void ForStat(std::vector<Token> &V, std::stack<Node*> &S);
+void ForExp(std::vector<Token> &V, std::stack<Node*> &S);
+void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S);
+void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S);
 
 void Statement(std::vector<Token> &V, std::stack<Node*> &S){
     if(V.begin()->token == "block"){
@@ -273,7 +454,7 @@ void Statement(std::vector<Token> &V, std::stack<Node*> &S){
     } else
     if(V.begin()->token == "exit"){
         Read(V, "exit");
-        Build_tree("exit", 0);
+        Build_tree("exit", 0, S);
     } else
     if(V.begin()->token == "return"){
         Read(V, "return");
@@ -297,6 +478,76 @@ void Body(std::vector<Token> &V, std::stack<Node*> &S){
     Build_tree("block", x, S);
 }
 
+void CaseExpression(std::vector<Token> &V, std::stack<Node*> &S){
+    ConstValue(V, S);
+    if(V.begin()->token == ".."){
+        ConstValue(V, S);
+        Build_tree("..", 2, S);
+    }
+}
+
+void Caseclause(std::vector<Token> &V, std::stack<Node*> &S){
+    CaseExpression(V, S);
+    int x = 2;
+    while(V.begin()->token == ","){
+        Read(V, ",");
+        CaseExpression(V, S);
+        ++x;
+    }
+    Read(V, ":");
+    Statement(V, S);
+    Build_tree("case_clause", x, S);
+}
+
+void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S){
+    int x = 1;
+    Caseclause(V, S);
+    while(V.begin()->token == ";"){
+        Read(V, ";");
+        ++x;
+        Caseclause(V, S);
+    }
+
+}
+
+void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()->token == "otherwise"){
+        Statement(V, S);
+        Build_tree("otherwise", 1, S);
+    }
+}
+
+void Assignment(std::vector<Token> &V, std::stack<Node*> &S){
+    Name(V, S);
+    if(V.begin()->token == ":="){
+        Expression(V, S);
+        Build_tree("assign", 2, S);
+    } else
+    if(V.begin()->token == ":=:"){
+        Name(V, S);
+        Build_tree("swap", 2, S);
+    } else {
+        exit(EXIT_FAILURE);
+    }
+}
+
+void ForStat(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()->type == "identifier"){
+        Assignment(V, S);
+    } else {
+        Build_tree("<null>", 0, S);
+    }
+}
+
+void ForExp(std::vector<Token> &V, std::stack<Node*> &S){
+    if(V.begin()->type == "identifier" || V.begin()->type == "char" || V.begin()->token == "+" || V.begin()->token == "not" || V.begin()->token == "succ" || V.begin()->token == "chr" || V.begin()->token == "ord" || V.begin()->token == "eof" || V.begin()->token == "(" || V.begin()->token == ")")
+    {
+        Expression(V, S);
+    } else {
+        Build_tree("true", 0, S);
+    }
+}
+
 void Fcn(std::vector<Token> &V, std::stack<Node*> &S){
     Read(V, "function");
     Name(V, S);
@@ -312,13 +563,13 @@ void Fcn(std::vector<Token> &V, std::stack<Node*> &S){
     Body(V, S);
     Name(V, S);
     Read(V, ";");
-    Build_tree("fcn", 8);
+    Build_tree("fcn", 8, S);
 }
 
 void SubProgs(std::vector<Token> &V, std::stack<Node*> &S){
     int x = 0;
     while(V.begin()->token== "function"){
-        Fcn();
+        Fcn(V, S);
     }
     Build_tree("subprogs" , x, S);
 }
@@ -344,8 +595,8 @@ std::vector<Token> Stacko (std::string file){
     std::vector<Token> out;
     std::ifstream inFile;
     std::string working;
-    infile.open(file);
-    if(!infile.is_open()){
+    inFile.open(file);
+    if(!inFile.is_open()){
         exit(EXIT_FAILURE);
     }
     inFile >> working;
@@ -357,7 +608,7 @@ std::vector<Token> Stacko (std::string file){
         }
         Token p;
         p.token = working;
-        out.push_back(p)
+        out.push_back(p);
         inFile >> working;
     }
 }
