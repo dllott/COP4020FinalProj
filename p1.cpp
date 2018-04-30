@@ -11,11 +11,10 @@
 //David Lott 2810-4729
 
 //Node for First-Child, Next-Sibling Tree
-class Node {
-    public :
-        std::string token;
-        Node * left;
-        Node * right;
+struct Node {
+    std::string token;
+    Node * left = NULL;
+    Node * right = NULL;
 };
 
 //Token class, contains actual text from input and token type
@@ -27,14 +26,21 @@ public:
 
 //Tree Builder function, taken almost directly from notes
 void Build_tree(std::string x, int n, std::stack<Node*> &S){
+    std::cout << "BT: " << x << "," << n << std::endl;
     Node * p;
+    p = new Node;
     Node * c;
+    c = new Node;
     Node * l;
-    for(int i = 0; i < n; ++i){
-        c = S.top();
-        S.pop();
-        c->right = p;
-        p = c;
+    l = new Node;
+    if(n > 0){
+        for(int i = 0; i < n; ++i){
+            c = S.top();
+            S.pop();
+            c->right = p;
+            p = c;
+        }
+
     }
     l->left = p;
     l->token = x;
@@ -43,6 +49,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
 }
 
 void Read(std::vector<Token> &V, std::string s, std::stack<Node*> S){
+    //std::cout << "attempting read: " << s << std::endl;
     if(s == "<integer>"){
         if(V.begin()->type == "integer"){
             Build_tree(V.begin()->token, 0, S);
@@ -561,7 +568,7 @@ void Assignment(std::vector<Token> &V, std::stack<Node*> &S){
         Name(V, S);
         Build_tree("swap", 2, S);
     } else {
-        exit(EXIT_FAILURE);
+         exit(EXIT_FAILURE);
     }
 }
 
@@ -697,6 +704,7 @@ std::vector<Token> LexVec (std::string file){
             while(working != "}"){
                 inFile >> working;
             }
+            inFile >> working;
         }
         bool varDec = false;
         bool strDec = false;
@@ -737,7 +745,7 @@ std::vector<Token> LexVec (std::string file){
                                      working != "{" && working != "}" && working != ":" &&
                                       working != ";" && working != "." && working != "," &&
                                        working != "(" && working != ")" && working != "+" &&
-                                        working != "-" && working != "*" && working != "/"){
+                                        working != "-" && working != "*" && working != "/" && working != "integer" ){
                                                 p.type = "identifier";
                                         }
         } else {
@@ -775,7 +783,10 @@ int main(int argc, char * argv[]){
         path=std::string(argv[1]);
     }
     std::vector<Token> V = LexVec(path);
-
-
+    std::stack<Node*> S;
+    for(int i = 0; i < V.size(); ++i){
+        std::cout << V[i].token << " tt " << V[i].type << std::endl;
+    }
+    Tiny(V, S);
     return 0;
 }
