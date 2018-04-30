@@ -27,6 +27,7 @@ public:
 //Tree Builder function, taken almost directly from notes
 void Build_tree(std::string x, int n, std::stack<Node*> &S){
     std::cout << "BT: " << x << "," << n << std::endl;
+    //std::cout << "before stack height: " << S.size() << std::endl;
     Node * p;
     p = new Node;
     Node * c;
@@ -35,26 +36,32 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
     l = new Node;
     if(n > 0){
         for(int i = 0; i < n; ++i){
+
             c = S.top();
             S.pop();
             c->right = p;
             p = c;
+            //std::cout << "built: " << i << std::endl;
         }
 
     }
+    //std::cout << "loop done" << std::endl;
     l->left = p;
     l->token = x;
     S.push(l);
+    //std::cout << "after stack height: " << S.size() << std::endl;
+    //std::cout << "done" << std::endl;
 
 }
 
-void Read(std::vector<Token> &V, std::string s, std::stack<Node*> S){
-    //std::cout << "attempting read: " << s << std::endl;
+void Read(std::vector<Token> &V, std::string s, std::stack<Node*> &S){
+    std::cout << "attempting read: " << s << std::endl;
     if(s == "<integer>"){
         if(V.begin()->type == "integer"){
             Build_tree(V.begin()->token, 0, S);
             Build_tree("<integer>", 1, S);
         } else {
+            std::cout <<"read error: integer" << std::endl;
             exit(EXIT_FAILURE);
         }
     } else
@@ -63,6 +70,7 @@ void Read(std::vector<Token> &V, std::string s, std::stack<Node*> S){
             Build_tree(V.begin()->token, 0, S);
             Build_tree("<char>", 1, S);
         } else {
+            std::cout <<"read error: char" << std::endl;
             exit(EXIT_FAILURE);
         }
     } else
@@ -71,6 +79,7 @@ void Read(std::vector<Token> &V, std::string s, std::stack<Node*> S){
             Build_tree(V.begin()->token, 0, S);
             Build_tree("<identifier>", 1, S);
         } else {
+            std::cout <<"read error: identifier, " << V.begin()->token << std::endl;
             exit(EXIT_FAILURE);
         }
     } else
@@ -79,6 +88,7 @@ void Read(std::vector<Token> &V, std::string s, std::stack<Node*> S){
             Build_tree(V.begin()->token, 0, S);
             Build_tree("<string>", 1, S);
         } else {
+            std::cout <<"read error: string" << std::endl;
             exit(EXIT_FAILURE);
         }
     } else
@@ -90,7 +100,9 @@ void Read(std::vector<Token> &V, std::string s, std::stack<Node*> S){
 }
 
 void Name(std::vector<Token> &V, std::stack<Node*> &S){
+    //std::cout << "NAME before stack height: " << S.size() << std::endl;
     Read(V, "<identifier>", S);
+    //std::cout << "NAME after stack height: " << S.size() << std::endl;
 }
 
 void ConstValue(std::vector<Token> &V, std::stack<Node*> &S){
@@ -172,14 +184,17 @@ void Dcln(std::vector<Token> &V, std::stack<Node*> &S){
         Name(V, S);
     }
     Read(V, ":", S);
+    //std::cout << "DCLN stack height 0: " << S.size() << std::endl;
     Name(V, S);
-    Build_tree("dclns", x, S);
+    //std::cout << "DCLN stack height 1: " << S.size() << std::endl;
+    Build_tree("var", x, S);
 }
 
 void Params(std::vector<Token> &V, std::stack<Node*> &S){
     int x = 1;
     Dcln(V, S);
     while(V.begin()->token == ";"){
+        //std::cout << "params: " << V.begin()->token << std::endl;
         ++x;
         Read(V, ";", S);
         Dcln(V, S);
@@ -193,10 +208,11 @@ void Dclns(std::vector<Token> &V, std::stack<Node*> &S){
         Read(V, "var", S);
         x = 1;
         Dcln(V, S);
+        Read(V, ";", S);
         while(V.begin()->token == ";"){
             ++x;
-            Read(V, ";", S);
             Dcln(V, S);
+            Read(V, ";", S);
         }
     }
     Build_tree("dclns", x, S);
@@ -618,6 +634,7 @@ void SubProgs(std::vector<Token> &V, std::stack<Node*> &S){
 
 
 void Tiny(std::vector<Token> &V, std::stack<Node*> &S){
+
     Read(V, "program", S);
     Name(V, S);
     Read(V, ":", S);
@@ -628,6 +645,7 @@ void Tiny(std::vector<Token> &V, std::stack<Node*> &S){
     Body(V, S);
     Name(V, S);
     Read(V, ".", S);
+    std::cout <<"Tiny" << std::endl;
     Build_tree("program", 7, S);
 }
 
@@ -745,7 +763,7 @@ std::vector<Token> LexVec (std::string file){
                                      working != "{" && working != "}" && working != ":" &&
                                       working != ";" && working != "." && working != "," &&
                                        working != "(" && working != ")" && working != "+" &&
-                                        working != "-" && working != "*" && working != "/" && working != "integer" ){
+                                        working != "-" && working != "*" && working != "/" ){
                                                 p.type = "identifier";
                                         }
         } else {
