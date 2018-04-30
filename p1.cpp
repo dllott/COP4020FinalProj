@@ -327,7 +327,7 @@ void Primary(std::vector<Token> &V, std::stack<Node*> &S){
     } else {
         Name(V, S);
         if(V.begin()->token == "("){
-            int x = 1;
+            int x = 2;
             Read(V, "(", S);
             Expression(V, S);
             while(V.begin()->token == ","){
@@ -509,7 +509,7 @@ void Statement(std::vector<Token> &V, std::stack<Node*> &S){
         while(V.begin()->token == ","){
             ++x;
             Read(V, ",", S);
-            Statement(V, S);
+            Name(V, S);
         }
         Read(V, ")", S);
         Build_tree("read", x, S);
@@ -633,6 +633,7 @@ void Fcn(std::vector<Token> &V, std::stack<Node*> &S){
 void SubProgs(std::vector<Token> &V, std::stack<Node*> &S){
     int x = 0;
     while(V.begin()->token== "function"){
+        ++x;
         Fcn(V, S);
     }
     Build_tree("subprogs" , x, S);
@@ -641,7 +642,6 @@ void SubProgs(std::vector<Token> &V, std::stack<Node*> &S){
 
 
 void Tiny(std::vector<Token> &V, std::stack<Node*> &S){
-
     Read(V, "program", S);
     Name(V, S);
     Read(V, ":", S);
@@ -806,7 +806,7 @@ void printPreOrder(Node * p, std::string indent){
     }
     std::cout << indent << p->token << "(" << p->num << ")" <<std::endl;
     printPreOrder(p->left, indent + ". ");
-    printPreOrder(p->right, indent + ". ");
+    printPreOrder(p->right, indent);
 }
 
 int main(int argc, char * argv[]){
