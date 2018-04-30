@@ -211,11 +211,12 @@ void Dclns(std::vector<Token> &V, std::stack<Node*> &S){
         Read(V, "var", S);
         x = 1;
         Dcln(V, S);
-        Read(V, ";", S);
         while(V.begin()->token == ";"){
-            ++x;
-            Dcln(V, S);
             Read(V, ";", S);
+            if(V.begin()->type == "identifier"){
+                ++x;
+                Dcln(V, S);
+            }
         }
     }
     Build_tree("dclns", x, S);
@@ -566,8 +567,10 @@ void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S){
     Caseclause(V, S);
     while(V.begin()->token == ";"){
         Read(V, ";", S);
-        ++x;
-        Caseclause(V, S);
+        if(V.begin()->type == "integer" ||V.begin()->type == "char" ||V.begin()->type == "identifier"){
+            ++x;
+            Caseclause(V, S);
+        }
     }
 
 }
@@ -723,7 +726,7 @@ std::vector<Token> LexVec (std::string file){
 
     }
 
-    std::cout << whole;
+    //std::cout << whole;
 
 
     std::stringstream inFile(whole);
