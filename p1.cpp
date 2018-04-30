@@ -93,6 +93,7 @@ void Read(std::vector<Token> &V, std::string s, std::stack<Node*> &S){
         }
     } else
     if(V.begin()->token != s){
+        std::cout <<"read error, " << V.begin()->token << std::endl;
         std::cout << "ERROR";
         exit(EXIT_FAILURE);
     }
@@ -227,6 +228,7 @@ void Term(std::vector<Token> &V, std::stack<Node*> &S);
 
 void Expression(std::vector<Token> &V, std::stack<Node*> &S){
     Term(V, S);
+    std::cout << "done term" << std::endl;
     if(V.begin()->token == "<="){
         Read(V, "<=", S);
         Term(V, S);
@@ -243,6 +245,7 @@ void Expression(std::vector<Token> &V, std::stack<Node*> &S){
         Build_tree(">=", 2, S);
     } else
     if(V.begin()->token == ">"){
+        std::cout << "recog > " << std::endl;
         Read(V, ">", S);
         Term(V, S);
         Build_tree(">", 2, S);
@@ -366,25 +369,23 @@ void Factor(std::vector<Token> &V, std::stack<Node*> &S){
 }
 
 void Term(std::vector<Token> &V, std::stack<Node*> &S){
-    if(V.begin()-> token == "+"){
-        Term(V, S);
-        Read(V, "+", S);
-        Factor(V, S);
-        Build_tree("+", 2, S);
-    } else
-    if(V.begin()-> token == "-"){
-        Term(V, S);
-        Read(V, "-", S);
-        Factor(V, S);
-        Build_tree("-", 2, S);
-    } else
-    if(V.begin()-> token == "or"){
-        Term(V, S);
-        Read(V, "or", S);
-        Factor(V, S);
-        Build_tree("or", 2, S);
-    } else {
-        Factor(V, S);
+    Factor(V, S);
+    while(V.begin()-> token == "+" || V.begin()-> token == "-" || V.begin()-> token == "or"){
+        if(V.begin()-> token == "+"){
+            Read(V, "+", S);
+            Factor(V, S);
+            Build_tree("+", 2, S);
+        } else
+        if(V.begin()-> token == "-"){
+            Read(V, "-", S);
+            Factor(V, S);
+            Build_tree("-", 2, S);
+        } else
+        if(V.begin()-> token == "or"){
+            Read(V, "or", S);
+            Factor(V, S);
+            Build_tree("or", 2, S);
+        }
     }
 }
 
@@ -577,10 +578,12 @@ void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S){
 void Assignment(std::vector<Token> &V, std::stack<Node*> &S){
     Name(V, S);
     if(V.begin()->token == ":="){
+        Read(V, ":=", S);
         Expression(V, S);
         Build_tree("assign", 2, S);
     } else
     if(V.begin()->token == ":=:"){
+        Read(V, ":=:", S);
         Name(V, S);
         Build_tree("swap", 2, S);
     } else {
