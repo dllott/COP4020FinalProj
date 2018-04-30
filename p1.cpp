@@ -692,7 +692,7 @@ std::vector<Token> LexVec (std::string file){
 
         //std::cout << whole.at(i);
 
-        if(whole.at(i) == ';' || whole.at(i) == ',' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
+        if(whole.at(i) == '}' || whole.at(i) == '{' || whole.at(i) == ';' || whole.at(i) == ',' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
             //std::cout << "found a thing " << whole.at(i) << std::endl;
             whole.insert(i+1, " ");
             whole.insert(i, " ");
