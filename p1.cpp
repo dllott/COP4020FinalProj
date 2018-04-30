@@ -27,7 +27,7 @@ public:
 
 //Tree Builder function, taken almost directly from notes
 void Build_tree(std::string x, int n, std::stack<Node*> &S){
-    std::cout << "BT: " << x << "," << n << std::endl;
+    //std::cout << "BT: " << x << "," << n << std::endl;
     //std::cout << "before stack height: " << S.size() << std::endl;
     Node * p;
     p = NULL;
@@ -57,7 +57,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
 }
 
 void Read(std::vector<Token> &V, std::string s, std::stack<Node*> &S){
-    std::cout << "attempting read: " << s << std::endl;
+    //std::cout << "attempting read: " << s << std::endl;
     if(s == "<integer>"){
         if(V.begin()->type == "integer"){
             Build_tree(V.begin()->token, 0, S);
@@ -688,8 +688,10 @@ std::vector<Token> LexVec (std::string file){
             whole.erase(i-1,1);
         }
 
+        //std::cout << whole.at(i);
+
         if(whole.at(i) == ';' || whole.at(i) == ',' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '.' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
-            //std::cout << "found a thing" << whole.at(i) << std::endl;
+            //std::cout << "found a thing " << whole.at(i) << std::endl;
             whole.insert(i+1, " ");
             whole.insert(i, " ");
             i+=2;
@@ -720,18 +722,29 @@ std::vector<Token> LexVec (std::string file){
             }
         } else
         if(whole.at(i) == '='){
+            //std::cout << "found a = " << std::endl;
             if(whole.at(i-1) != '<' && whole.at(i-1) != '>' && whole.at(i-1) != ':'){
                 whole.insert(i, " ");
+                //std::cout << "found nonlopsided = " << std::endl;
                 ++i;
-            }
+                if(whole.at(i+1) != ':'){
+                    whole.insert(i+1, " ");
+                    //std::cout << "found a non switch = " << std::endl;
+                    i++;
+                }
+
+            } else
             if(whole.at(i+1) != ':'){
                 whole.insert(i+1, " ");
+                //std::cout << "found a non switch = " << std::endl;
                 i+=2;
             }
         }
 
     }
 
+    //std::cout << std::endl;
+    //std::cout << std::endl;
     //std::cout << whole;
 
 
