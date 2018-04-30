@@ -550,6 +550,7 @@ void Body(std::vector<Token> &V, std::stack<Node*> &S){
 void CaseExpression(std::vector<Token> &V, std::stack<Node*> &S){
     ConstValue(V, S);
     if(V.begin()->token == ".."){
+        Read(V, "..", S);
         ConstValue(V, S);
         Build_tree("..", 2, S);
     }
@@ -583,6 +584,7 @@ int Caseclauses(std::vector<Token> &V, std::stack<Node*> &S){
 
 void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S){
     if(V.begin()->token == "otherwise"){
+        Read(V, "otherwise", S);
         Statement(V, S);
         Build_tree("otherwise", 1, S);
     }
@@ -690,7 +692,7 @@ std::vector<Token> LexVec (std::string file){
 
         //std::cout << whole.at(i);
 
-        if(whole.at(i) == ';' || whole.at(i) == ',' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '.' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
+        if(whole.at(i) == ';' || whole.at(i) == ',' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
             //std::cout << "found a thing " << whole.at(i) << std::endl;
             whole.insert(i+1, " ");
             whole.insert(i, " ");
@@ -712,6 +714,18 @@ std::vector<Token> LexVec (std::string file){
             }
 
         } else
+        if(whole.at(i) == '.'){
+            if(whole.at(i+1) == '.'){
+                whole.insert(i, " ");
+                i+=2;
+                whole.insert(i+1, " ");
+                i+=2;
+            } else {
+                whole.insert(i+1, " ");
+                whole.insert(i, " ");
+                i+=2;
+            }
+        }
         if(whole.at(i) == '<' || whole.at(i) == '>'){
             //std::cout << "found a comparison" << std::endl;
             whole.insert(i, " ");
