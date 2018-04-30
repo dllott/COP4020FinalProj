@@ -12,6 +12,7 @@
 
 //Node for First-Child, Next-Sibling Tree
 struct Node {
+    int num = 0;
     std::string token;
     Node * left = NULL;
     Node * right = NULL;
@@ -29,7 +30,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
     std::cout << "BT: " << x << "," << n << std::endl;
     //std::cout << "before stack height: " << S.size() << std::endl;
     Node * p;
-    p = new Node;
+    p = NULL;
     Node * c;
     c = new Node;
     Node * l;
@@ -48,6 +49,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
     //std::cout << "loop done" << std::endl;
     l->left = p;
     l->token = x;
+    l->num = n;
     S.push(l);
     //std::cout << "after stack height: " << S.size() << std::endl;
     //std::cout << "done" << std::endl;
@@ -55,7 +57,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
 }
 
 void Read(std::vector<Token> &V, std::string s, std::stack<Node*> &S){
-    std::cout << "attempting read: " << s << std::endl;
+    //std::cout << "attempting read: " << s << std::endl;
     if(s == "<integer>"){
         if(V.begin()->type == "integer"){
             Build_tree(V.begin()->token, 0, S);
@@ -228,7 +230,7 @@ void Term(std::vector<Token> &V, std::stack<Node*> &S);
 
 void Expression(std::vector<Token> &V, std::stack<Node*> &S){
     Term(V, S);
-    std::cout << "done term" << std::endl;
+    //std::cout << "done term" << std::endl;
     if(V.begin()->token == "<="){
         Read(V, "<=", S);
         Term(V, S);
@@ -245,7 +247,7 @@ void Expression(std::vector<Token> &V, std::stack<Node*> &S){
         Build_tree(">=", 2, S);
     } else
     if(V.begin()->token == ">"){
-        std::cout << "recog > " << std::endl;
+        //std::cout << "recog > " << std::endl;
         Read(V, ">", S);
         Term(V, S);
         Build_tree(">", 2, S);
@@ -340,31 +342,28 @@ void Primary(std::vector<Token> &V, std::stack<Node*> &S){
 }
 
 void Factor(std::vector<Token> &V, std::stack<Node*> &S){
-    if(V.begin()-> token == "*"){
-        Factor(V, S);
-        Read(V, "*", S);
-        Primary(V, S);
-        Build_tree("*", 2, S);
-    } else
-    if(V.begin()-> token == "/"){
-        Factor(V, S);
-        Read(V, "/", S);
-        Primary(V, S);
-        Build_tree("/", 2, S);
-    } else
-    if(V.begin()-> token == "and"){
-        Factor(V, S);
-        Read(V, "and", S);
-        Primary(V, S);
-        Build_tree("and", 2, S);
-    } else
-    if(V.begin()-> token == "mod"){
-        Factor(V, S);
-        Read(V, "mod", S);
-        Primary(V, S);
-        Build_tree("mod", 2, S);
-    } else {
-        Primary(V,S);
+    Primary(V, S);
+    while(V.begin()->token == "*" ||V.begin()->token == "/" ||V.begin()->token == "and" ||V.begin()->token == "mod"){
+        if(V.begin()-> token == "*"){
+            Read(V, "*", S);
+            Primary(V, S);
+            Build_tree("*", 2, S);
+        } else
+        if(V.begin()-> token == "/"){
+            Read(V, "/", S);
+            Primary(V, S);
+            Build_tree("/", 2, S);
+        } else
+        if(V.begin()-> token == "and"){
+            Read(V, "and", S);
+            Primary(V, S);
+            Build_tree("and", 2, S);
+        } else
+        if(V.begin()-> token == "mod"){
+            Read(V, "mod", S);
+            Primary(V, S);
+            Build_tree("mod", 2, S);
+        }
     }
 }
 
@@ -403,9 +402,13 @@ void ForStat(std::vector<Token> &V, std::stack<Node*> &S);
 void ForExp(std::vector<Token> &V, std::stack<Node*> &S);
 void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S);
 void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S);
+void Assignment(std::vector<Token> &V, std::stack<Node*> &S);
 
 void Statement(std::vector<Token> &V, std::stack<Node*> &S){
-    if(V.begin()->token == "block"){
+    if(V.begin()->type == "identifier"){
+        Assignment(V, S);
+    } else
+    if(V.begin()->token == "begin"){
         //Body
         Read(V,"begin", S);
         int x = 1;
@@ -456,6 +459,7 @@ void Statement(std::vector<Token> &V, std::stack<Node*> &S){
         Statement(V, S);
         int x = 2;
         while(V.begin()->token == ";"){
+            //std::cout << "repeating " << x-1 << std::endl;
             ++x;
             Read(V, ";", S);
             Statement(V, S);
@@ -648,7 +652,6 @@ void Tiny(std::vector<Token> &V, std::stack<Node*> &S){
     Body(V, S);
     Name(V, S);
     Read(V, ".", S);
-    std::cout <<"Tiny" << std::endl;
     Build_tree("program", 7, S);
 }
 
@@ -796,6 +799,16 @@ std::vector<Token> LexVec (std::string file){
 
 }
 
+//preorder printing function
+void printPreOrder(Node * p, std::string indent){
+    if(!p){
+        return;
+    }
+    std::cout << indent << p->token << "(" << p->num << ")" <<std::endl;
+    printPreOrder(p->left, indent + ". ");
+    printPreOrder(p->right, indent + ". ");
+}
+
 int main(int argc, char * argv[]){
     std::string path;
     if(argc > 2){
@@ -806,8 +819,11 @@ int main(int argc, char * argv[]){
     std::vector<Token> V = LexVec(path);
     std::stack<Node*> S;
     for(int i = 0; i < V.size(); ++i){
-        std::cout << V[i].token << " tt " << V[i].type << std::endl;
+        //std::cout << V[i].token << " tt " << V[i].type << std::endl;
     }
     Tiny(V, S);
+    Node * p = S.top();
+    printPreOrder(p, "");
+
     return 0;
 }
