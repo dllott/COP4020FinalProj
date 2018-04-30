@@ -51,7 +51,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
     l->token = x;
     l->num = n;
     S.push(l);
-    std::cout << "after stack height: " << S.size() << std::endl;
+    //std::cout << "after stack height: " << S.size() << std::endl;
     //std::cout << "done" << std::endl;
 
 }
@@ -281,9 +281,9 @@ void Primary(std::vector<Token> &V, std::stack<Node*> &S){
         Build_tree("+", 1, S);
     } else
     if(V.begin()-> token == "not"){
-        Read(V, "-", S);
+        Read(V, "not", S);
         Primary(V, S);
-        Build_tree("-", 1, S);
+        Build_tree("not", 1, S);
     } else
     if(V.begin()-> token == "eof"){
         Read(V, "eof", S);
