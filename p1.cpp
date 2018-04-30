@@ -51,7 +51,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
     l->token = x;
     l->num = n;
     S.push(l);
-    //std::cout << "after stack height: " << S.size() << std::endl;
+    std::cout << "after stack height: " << S.size() << std::endl;
     //std::cout << "done" << std::endl;
 
 }
@@ -159,7 +159,7 @@ void Type(std::vector<Token> &V, std::stack<Node*> &S){
     Name(V,S);
     Read(V, "=", S);
     LitList(V,S);
-    Build_tree("type",3, S);
+    Build_tree("type",2, S);
 }
 
 void Types(std::vector<Token> &V, std::stack<Node*> &S){
@@ -168,9 +168,11 @@ void Types(std::vector<Token> &V, std::stack<Node*> &S){
         Read(V, "type", S);
         Type(V, S);
         while(V.begin()->token == ";"){
-            ++x;
             Read(V, ";", S);
-            Type(V, S);
+            if(V.begin()->type == "identifier"){
+                ++x;
+                Type(V, S);
+            }
         }
         Build_tree("types", x, S);
     } else {
@@ -401,7 +403,7 @@ void OutExp(std::vector<Token> &V, std::stack<Node*> &S){
 
 void ForStat(std::vector<Token> &V, std::stack<Node*> &S);
 void ForExp(std::vector<Token> &V, std::stack<Node*> &S);
-void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S);
+int Caseclauses(std::vector<Token> &V, std::stack<Node*> &S);
 void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S);
 void Assignment(std::vector<Token> &V, std::stack<Node*> &S);
 
@@ -495,12 +497,16 @@ void Statement(std::vector<Token> &V, std::stack<Node*> &S){
     } else
     if(V.begin()->token == "case"){
         Read(V, "case", S);
+        int x = 1;
         Expression(V, S);
         Read(V, "of", S);
-        Caseclauses(V, S);
-        OtherwiseClause(V, S);
+        x += Caseclauses(V, S);
+        if(V.begin()->token == "otherwise"){
+            OtherwiseClause(V, S);
+            ++x;
+        }
         Read(V, "end", S);
-        Build_tree("case", 3, S);
+        Build_tree("case", x, S);
     } else
     if(V.begin()->token == "read"){
         Read(V, "read", S);
@@ -562,7 +568,7 @@ void Caseclause(std::vector<Token> &V, std::stack<Node*> &S){
     Build_tree("case_clause", x, S);
 }
 
-void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S){
+int Caseclauses(std::vector<Token> &V, std::stack<Node*> &S){
     int x = 1;
     Caseclause(V, S);
     while(V.begin()->token == ";"){
@@ -572,7 +578,7 @@ void Caseclauses(std::vector<Token> &V, std::stack<Node*> &S){
             Caseclause(V, S);
         }
     }
-
+    return x;
 }
 
 void OtherwiseClause(std::vector<Token> &V, std::stack<Node*> &S){
@@ -682,7 +688,7 @@ std::vector<Token> LexVec (std::string file){
             whole.erase(i-1,1);
         }
 
-        if(whole.at(i) == ';' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '.' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
+        if(whole.at(i) == ';' || whole.at(i) == ',' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '.' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
             //std::cout << "found a thing" << whole.at(i) << std::endl;
             whole.insert(i+1, " ");
             whole.insert(i, " ");
