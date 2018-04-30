@@ -57,7 +57,7 @@ void Build_tree(std::string x, int n, std::stack<Node*> &S){
 }
 
 void Read(std::vector<Token> &V, std::string s, std::stack<Node*> &S){
-    //std::cout << "attempting read: " << s << std::endl;
+    std::cout << "attempting read: " << s << std::endl;
     if(s == "<integer>"){
         if(V.begin()->type == "integer"){
             Build_tree(V.begin()->token, 0, S);
@@ -672,6 +672,13 @@ std::vector<Token> LexVec (std::string file){
 
     for(int i = 0; i<whole.length(); ++i){
 
+        if(whole.at(i) == '#'){
+            while(whole.at(i) != '\n'){
+                whole.erase(i-1,1);
+            }
+            whole.erase(i-1,1);
+        }
+
         if(whole.at(i) == ';' || whole.at(i) == '(' || whole.at(i) == ')' || whole.at(i) == '.' || whole.at(i) == '+' || whole.at(i) == '-' || whole.at(i) == '*' || whole.at(i) == '/' || whole.at(i) == '\"'){
             //std::cout << "found a thing" << whole.at(i) << std::endl;
             whole.insert(i+1, " ");
@@ -716,7 +723,7 @@ std::vector<Token> LexVec (std::string file){
 
     }
 
-    //std::cout << whole;
+    std::cout << whole;
 
 
     std::stringstream inFile(whole);
@@ -816,14 +823,24 @@ int main(int argc, char * argv[]){
     }else{
         path=std::string(argv[1]);
     }
+
+    //analyze input
     std::vector<Token> V = LexVec(path);
+    //init stack
     std::stack<Node*> S;
-    for(int i = 0; i < V.size(); ++i){
-        //std::cout << V[i].token << " tt " << V[i].type << std::endl;
-    }
+
+    /*for(int i = 0; i < V.size(); ++i){
+        std::cout << V[i].token << " tt " << V[i].type << std::endl;
+    }*/
+
+    //start recursive descent parser
     Tiny(V, S);
-    Node * p = S.top();
-    printPreOrder(p, "");
+
+    //if switch -ast, print the tree
+    if(argc > 2 && !strcmp(argv[1], "-ast")){
+        Node * p = S.top();
+        printPreOrder(p, "");
+    }
 
     return 0;
 }
